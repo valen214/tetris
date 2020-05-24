@@ -1,0 +1,35 @@
+
+.stage {
+  --grid-width: 30px;
+  --gridline-style: 3px solid rgba(0, 0, 0, 0.5);
+
+  width: calc(var(--grid-width) * 10);
+  height: calc(var(--grid-width) * 20 + 3px);
+  overflow: hidden;
+
+  padding-top: 30px;
+
+  .gridlines-container {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+
+    border-top: var(--gridline-style);
+    border-left: var(--gridline-style);
+
+    .column {
+      background: #eee;
+      border-right: var(--gridline-style);
+      width: var(--grid-width);
+      height: 100%;
+
+      .block {
+        width: 100%;
+        height: var(--grid-width);
+        border-bottom: var(--gridline-style);
+      }
+    }
+  }
+
+}
