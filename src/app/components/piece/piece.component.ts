@@ -1,4 +1,14 @@
-import { Component, OnInit, Input, ViewEncapsulation, ViewChild, ElementRef, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  Input,
+  ViewEncapsulation,
+  ViewChild,
+  ElementRef,
+  OnChanges,
+  SimpleChanges,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { Piece } from 'src/app/services/Piece.service';
 import { Grid } from 'src/app/services/game.service';
 
@@ -8,7 +18,7 @@ import { Grid } from 'src/app/services/game.service';
   styleUrls: ['./piece.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class PieceComponent implements OnInit, OnChanges {
+export class PieceComponent implements OnInit {
 
   /*
   _pieceContainer: HTMLDivElement;
@@ -24,43 +34,45 @@ export class PieceComponent implements OnInit, OnChanges {
   gridTemplate: string;
   dimension: number;
   background: string[];
+  styleObject: object
 
   @Input() size: number | string
   _piece: Piece
   @Input()
   set piece(value: Piece){
     this._piece = value;
-    if(value){
-      this.dimension = value.grid[0].length;
-      this.background = new Array(this.dimension * this.dimension).fill(Grid.EMPTY_COLOR);
-      this.gridTemplate = "1fr ".repeat(this.dimension);
-      let grid = value.grid[value.orientation];
-      for(let i = 0; i < this.dimension; ++i){
-        for(let j = 0; j < this.dimension; ++j){
-          if(grid[i][j]){
-            this.background[i * this.dimension + j] = this.piece.color;
-          }
+    if(!value) return;
+
+    this.dimension = value.grid[0].length;
+    this.background = new Array(16).fill(Grid.EMPTY_COLOR);
+    this.gridTemplate = "1fr ".repeat(4);
+    this.styleObject = {
+      gridTemplateRows: this.gridTemplate,
+      gridTemplateColumns: this.gridTemplate,
+      size: (typeof this.size === "string" ?
+          this.size : this.size && (this.size.toString() + "px")),
+    }
+
+    let grid = value.grid[value.orientation];
+    for(let i = 0; i < this.dimension; ++i){
+      for(let j = 0; j < this.dimension; ++j){
+        if(grid[i][j]){
+          this.background[i * 4 + j] = this.piece.color;
         }
-        console.log(this.background);
       }
     }
-    console.log(value);
   }
   get piece(){ return this._piece; }
 
-
-  constructor(
-    private changeDetectorRef: ChangeDetectorRef
-  ){}
-
-  ngOnChanges(changes: SimpleChanges): void {
-    
+  backgroundAt(i: number){
+    if(i < this.background.length){
+      return this.background[i];
+    } else{
+      return Grid.EMPTY_COLOR;
+    }
   }
 
-  ngOnInit(){
-  }
+  constructor(){}
 
-  ngAfterViewInit(){
-
-  }
+  ngOnInit(){}
 }

@@ -1,5 +1,11 @@
 <div class="queue-container">
-  <piece class="piece" *ngFor="let p of game.queue" [piece]="p">
+  <div *ngFor="let p of game.queue"
+      class="piece-container">
+    <piece
+        class="piece"
+        [piece]="p"
+        [size]="(p.grid[0].length * 20).toString() + 'px'">
 
-  </piece>
+    </piece>
+  </div>
 </div>

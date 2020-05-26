@@ -1,9 +1,9 @@
 <div *ngIf="dimension && piece"
     class="piece-container"
-    [ngStyle]="{ gridTemplateRows: gridTemplate, gridTemplateColumns: gridTemplate }"
+    [ngStyle]="styleObject"
     #pieceContainer>
-  <div *ngFor="let i of [].constructor(dimension * dimension) ; index as j"
-      class="block" [style.background]="background[j]">
+  <div *ngFor="let i of [].constructor(16) ; index as j"
+      class="block" [style.background]="backgroundAt(j)">
 
   </div>
 </div>
