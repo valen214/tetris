@@ -42,31 +42,91 @@ object-in-typescript-the-type-guards-24d98d9119b0
       })
     }
   }
+
+  rotate(clockwise = true): Piece[] {
+    throw Error("not implemented");
+  }
+
   static I = class I extends Piece {
     constructor(){
       super([
-        [
+        [ // North
           "0000",
           "1111",
           "0000",
           "0000"
-        ], [
+        ], [ // East
           "0010",
           "0010",
           "0010",
           "0010",
-        ], [
+        ], [ // South
           "0000",
           "0000",
           "1111",
           "0000"
-        ], [
+        ], [ // West
           "0100",
           "0100",
           "0100",
           "0100",
         ],
       ], 0, "#87CEEB", 3, -2);
+    }
+
+    rotate(clockwise = true): Piece[] {
+      let out = new Array(5).fill("").map(() => new Piece.I());
+      let xOffset: number[];
+      let yOffset: number[];
+      switch(this.orientation){
+      case 0:
+        if(clockwise){
+          xOffset = [0, -2, 1, -2,  1];
+          yOffset = [0,  0, 0,  1, -2];
+        } else{
+          xOffset = [0, -1, 2, -1, 2];
+          yOffset = [0,  0, 0, -2, 1];
+        }
+        break;
+      case 1:
+        if(clockwise){
+          xOffset = [0, -1, 2, -1, 2];
+          yOffset = [0,  0, 0, -2, 1];
+        } else{
+          xOffset = [0, 2, -1,  2, -1];
+          yOffset = [0, 0,  0, -1,  2];
+        }
+        break;
+      case 2:
+        if(clockwise){
+          xOffset = [0, 2, -1,  2, -1];
+          yOffset = [0, 0,  0, -1,  2];
+        } else{
+          xOffset = [0, 1, -2, 1, -2];
+          yOffset = [0, 0,  0, 2, -1];
+        }
+        break;
+      case 3:
+        if(clockwise){
+          xOffset = [0, 1, -2, 1, -2];
+          yOffset = [0, 0,  0, 2, -1];
+        } else{
+          xOffset = [0, -2, 1, -2,  1];
+          yOffset = [0,  0, 0,  1, -2];
+        }
+        break;
+      }
+      for(let i = 0; i < 5; ++i){
+        Object.assign(out[i], {
+          x: this.x + xOffset[i],
+          y: this.y + yOffset[i],
+          orientation: (
+            this.orientation +
+            (clockwise ? 1 : 3)
+          ) % 4
+        })
+      }
+      return out;
     }
   };
 
@@ -92,6 +152,62 @@ object-in-typescript-the-type-guards-24d98d9119b0
         ],
       ], 0, "#0341AE", 3, -2);
     }
+    
+
+    rotate(clockwise = true): Piece[] {
+      let out = new Array(5).fill("").map(() => new Piece.J());
+      let xOffset: number[];
+      let yOffset: number[];
+      switch(this.orientation){
+      case 0:
+        if(clockwise){
+          xOffset = [0, -1, -1, 0, -1];
+          yOffset = [0,  0, -1, 2,  2];
+        } else{
+          xOffset = [0, 1,  1, 0, 1];
+          yOffset = [0, 0, -1, 2, 2];
+        }
+        break;
+      case 1:
+        if(clockwise){
+          xOffset = [0, 1, 1,  0,  1];
+          yOffset = [0, 0, 1, -2, -2];
+        } else{
+          xOffset = [0, 1, 1,  0,  1];
+          yOffset = [0, 0, 1, -2, -2];
+        }
+        break;
+      case 2:
+        if(clockwise){
+          xOffset = [0, 1,  1, 0, 1];
+          yOffset = [0, 0, -1, 2, 2];
+        } else{
+          xOffset = [0, -1, -1, 0, -1];
+          yOffset = [0,  0, -1, 2,  2];
+        }
+        break;
+      case 3:
+        if(clockwise){
+          xOffset = [0, -1, -1,  0, -1];
+          yOffset = [0,  0,  1, -2, -2];
+        } else{
+          xOffset = [0, -1, -1,  0, -1];
+          yOffset = [0,  0,  1, -2, -2];
+        }
+        break;
+      }
+      for(let i = 0; i < 5; ++i){
+        Object.assign(out[i], {
+          x: this.x + xOffset[i],
+          y: this.y + yOffset[i],
+          orientation: (
+            this.orientation +
+            (clockwise ? 1 : 3)
+          ) % 4
+        })
+      }
+      return out;
+    }
   }
   
   static L = class L extends Piece {
@@ -116,6 +232,61 @@ object-in-typescript-the-type-guards-24d98d9119b0
         ],
       ], 0, "#FF971C", 3, -2);
     }
+
+    rotate(clockwise = true): Piece[] {
+      let out = new Array(5).fill("").map(() => new Piece.L());
+      let xOffset: number[];
+      let yOffset: number[];
+      switch(this.orientation){
+      case 0:
+        if(clockwise){
+          xOffset = [0, -1, -1, 0, -1];
+          yOffset = [0,  0, -1, 2,  2];
+        } else{
+          xOffset = [0, 1,  1, 0, 1];
+          yOffset = [0, 0, -1, 2, 2];
+        }
+        break;
+      case 1:
+        if(clockwise){
+          xOffset = [0, 1, 1,  0,  1];
+          yOffset = [0, 0, 1, -2, -2];
+        } else{
+          xOffset = [0, 1, 1,  0,  1];
+          yOffset = [0, 0, 1, -2, -2];
+        }
+        break;
+      case 2:
+        if(clockwise){
+          xOffset = [0, 1,  1, 0, 1];
+          yOffset = [0, 0, -1, 2, 2];
+        } else{
+          xOffset = [0, -1, -1, 0, -1];
+          yOffset = [0,  0, -1, 2,  2];
+        }
+        break;
+      case 3:
+        if(clockwise){
+          xOffset = [0, -1, -1,  0, -1];
+          yOffset = [0,  0,  1, -2, -2];
+        } else{
+          xOffset = [0, -1, -1,  0, -1];
+          yOffset = [0,  0,  1, -2, -2];
+        }
+        break;
+      }
+      for(let i = 0; i < 5; ++i){
+        Object.assign(out[i], {
+          x: this.x + xOffset[i],
+          y: this.y + yOffset[i],
+          orientation: (
+            this.orientation +
+            (clockwise ? 1 : 3)
+          ) % 4
+        })
+      }
+      return out;
+    }
   }
 
   static O = class O extends Piece {
@@ -135,6 +306,17 @@ object-in-typescript-the-type-guards-24d98d9119b0
           "11",
         ],
       ], 0, "#FFD500", 4, -2);
+    }
+
+    rotate(clockwise = true): Piece[]{
+      let out = new Array(5).fill("").map(() => new Piece.O());
+      for(let i = 0; i < 5; ++i){
+        Object.assign(out[i], {
+          x: this.x, y: this.y,
+          orientation: this.orientation
+        });
+      }
+      return out;
     }
   }
 
@@ -161,6 +343,61 @@ object-in-typescript-the-type-guards-24d98d9119b0
         ],
       ], 0, "#72CB3B", 3, -2);
     }
+
+    rotate(clockwise = true): Piece[] {
+      let out = new Array(5).fill("").map(() => new Piece.S());
+      let xOffset: number[];
+      let yOffset: number[];
+      switch(this.orientation){
+      case 0:
+        if(clockwise){
+          xOffset = [0, -1, -1, 0, -1];
+          yOffset = [0,  0, -1, 2,  2];
+        } else{
+          xOffset = [0, 1,  1, 0, 1];
+          yOffset = [0, 0, -1, 2, 2];
+        }
+        break;
+      case 1:
+        if(clockwise){
+          xOffset = [0, 1, 1,  0,  1];
+          yOffset = [0, 0, 1, -2, -2];
+        } else{
+          xOffset = [0, 1, 1,  0,  1];
+          yOffset = [0, 0, 1, -2, -2];
+        }
+        break;
+      case 2:
+        if(clockwise){
+          xOffset = [0, 1,  1, 0, 1];
+          yOffset = [0, 0, -1, 2, 2];
+        } else{
+          xOffset = [0, -1, -1, 0, -1];
+          yOffset = [0,  0, -1, 2,  2];
+        }
+        break;
+      case 3:
+        if(clockwise){
+          xOffset = [0, -1, -1,  0, -1];
+          yOffset = [0,  0,  1, -2, -2];
+        } else{
+          xOffset = [0, -1, -1,  0, -1];
+          yOffset = [0,  0,  1, -2, -2];
+        }
+        break;
+      }
+      for(let i = 0; i < 5; ++i){
+        Object.assign(out[i], {
+          x: this.x + xOffset[i],
+          y: this.y + yOffset[i],
+          orientation: (
+            this.orientation +
+            (clockwise ? 1 : 3)
+          ) % 4
+        })
+      }
+      return out;
+    }
   }
   
   static T = class T extends Piece {
@@ -185,6 +422,61 @@ object-in-typescript-the-type-guards-24d98d9119b0
         ],
       ], 0, "#FF97FF", 3, -2);
     }
+
+    rotate(clockwise = true): Piece[] {
+      let out = new Array(5).fill("").map(() => new Piece.T());
+      let xOffset: number[];
+      let yOffset: number[];
+      switch(this.orientation){
+      case 0:
+        if(clockwise){
+          xOffset = [0, -1, -1, 0, -1];
+          yOffset = [0,  0, -1, 0,  2];
+        } else{
+          xOffset = [0, 1,  1, 0, 1];
+          yOffset = [0, 0, -1, 0, 2];
+        }
+        break;
+      case 1:
+        if(clockwise){
+          xOffset = [0, 1, 1,  0,  1];
+          yOffset = [0, 0, 1, -2, -2];
+        } else{
+          xOffset = [0, 1, 1,  0,  1];
+          yOffset = [0, 0, 1, -2, -2];
+        }
+        break;
+      case 2:
+        if(clockwise){
+          xOffset = [0, 1, 0, 0, 1];
+          yOffset = [0, 0, 0, 2, 2];
+        } else{
+          xOffset = [0, -1, 0, 0, -1];
+          yOffset = [0,  0, 0, 2,  2];
+        }
+        break;
+      case 3:
+        if(clockwise){
+          xOffset = [0, -1, -1,  0, -1];
+          yOffset = [0,  0,  1, -2, -2];
+        } else{
+          xOffset = [0, -1, -1,  0, -1];
+          yOffset = [0,  0,  1, -2, -2];
+        }
+        break;
+      }
+      for(let i = 0; i < 5; ++i){
+        Object.assign(out[i], {
+          x: this.x + xOffset[i],
+          y: this.y + yOffset[i],
+          orientation: (
+            this.orientation +
+            (clockwise ? 1 : 3)
+          ) % 4
+        })
+      }
+      return out;
+    }
   }
 
   static Z = class Z extends Piece {
@@ -208,6 +500,60 @@ object-in-typescript-the-type-guards-24d98d9119b0
           "100",
         ],
       ], 0, "#FF3213", 3, -2);
+    }
+    rotate(clockwise = true): Piece[] {
+      let out = new Array(5).fill("").map(() => new Piece.Z());
+      let xOffset: number[];
+      let yOffset: number[];
+      switch(this.orientation){
+      case 0:
+        if(clockwise){
+          xOffset = [0, -1, -1, 0, -1];
+          yOffset = [0,  0, -1, 2,  2];
+        } else{
+          xOffset = [0, 1,  1, 0, 1];
+          yOffset = [0, 0, -1, 2, 2];
+        }
+        break;
+      case 1:
+        if(clockwise){
+          xOffset = [0, 1, 1,  0,  1];
+          yOffset = [0, 0, 1, -2, -2];
+        } else{
+          xOffset = [0, 1, 1,  0,  1];
+          yOffset = [0, 0, 1, -2, -2];
+        }
+        break;
+      case 2:
+        if(clockwise){
+          xOffset = [0, 1,  1, 0, 1];
+          yOffset = [0, 0, -1, 2, 2];
+        } else{
+          xOffset = [0, -1, -1, 0, -1];
+          yOffset = [0,  0, -1, 2,  2];
+        }
+        break;
+      case 3:
+        if(clockwise){
+          xOffset = [0, -1, -1,  0, -1];
+          yOffset = [0,  0,  1, -2, -2];
+        } else{
+          xOffset = [0, -1, -1,  0, -1];
+          yOffset = [0,  0,  1, -2, -2];
+        }
+        break;
+      }
+      for(let i = 0; i < 5; ++i){
+        Object.assign(out[i], {
+          x: this.x + xOffset[i],
+          y: this.y + yOffset[i],
+          orientation: (
+            this.orientation +
+            (clockwise ? 1 : 3)
+          ) % 4
+        })
+      }
+      return out;
     }
   }
 }

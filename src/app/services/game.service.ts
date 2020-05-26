@@ -28,7 +28,7 @@ export class Grid
 
   collide(
       p: Piece,
-      orientation: null|0|1|2|3,
+      orientation: null|0|1|2|3 = null,
       x: number = p.x,
       y: number = p.y){
     if(orientation === null){
@@ -111,27 +111,23 @@ export class Grid
   }
 
   rotate(clockwise = true){
-    // guidelines p.41 SRS
     if(!this.activePiece) return false;
 
     const p = this.activePiece;
-    let new_orientation = (
-        ( p.orientation + (clockwise ? 1 : 3) ) % 4
-    ) as 0|1|2|3
-    let grid = p.grid[new_orientation];
+    let candidates = p.rotate(clockwise);
+    let rotatable = false;
+    for(let i = 0; i < 5; ++i){
+      let c = candidates[i];
+      let collide_or_oob = this.collide(c);
+      if(!collide_or_oob.includes(true)){
+        rotatable = true;
 
-    let rotatable = true;
-
-    let collide_or_oob = this.collide(p, new_orientation, p.x, p.y);
-    if(collide_or_oob.some(b => b)){
-      rotatable = false;
+        Object.assign(p, c);
+        break;
+      }
     }
 
-    if(rotatable){
-      p.orientation = new_orientation;
-    }
-    return true;
-    
+    return rotatable;
   }
 
   mergePiece(){
