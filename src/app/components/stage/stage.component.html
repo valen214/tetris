@@ -6,7 +6,7 @@
       <div *ngFor="let _ of [].constructor(20); let row = index"
           class="block"
           [id]="col.toString() + '-' + row.toString()"
-          [style.background]="this.grid.getColorAt(col, row)">
+          [style.background]="this.grid ? this.grid.getColorAt(col, row) : '#eee'">
 
       </div>
     </div>

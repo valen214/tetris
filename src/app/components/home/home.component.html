@@ -1,0 +1,24 @@
+<div class="home-container">
+  <div class="left-panel">
+
+    <piece
+      [size]="'30px'"
+      [piece]="game.stored"
+      class="stored-piece"></piece>
+    <div
+        class="button new-game"
+        (click)="newGame()">
+      New Game
+    </div>
+    <div class="button start"
+        (click)="startButtonClick()">
+      {{ !newGameStarted ? "Start" : game.running ? "Pause" : "Continue" }}
+    </div>
+  </div>
+  <div class="center-panel">
+    <app-stage #gameStage></app-stage>
+  </div>
+  <div class="right-panel">
+    <app-queue></app-queue>
+  </div>
+</div>

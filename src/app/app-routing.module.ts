@@ -1,11 +1,11 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { StageComponent } from './components/stage/stage.component';
+import { HomeComponent } from './components/home/home.component';
 
 
 const routes: Routes = [{
   path: '**',
-  component: StageComponent,
+  component: HomeComponent,
 }];
 
 @NgModule({
