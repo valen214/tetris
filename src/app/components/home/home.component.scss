@@ -1,82 +1,91 @@
 
 .home-container {
+  --block-width: min(100vw / 15, 100vh / 22);
+
   display: flex;
   flex-direction: row;
   height: 100%;
   width: 100%;
   overflow: hidden;
-}
+  justify-content: center;
 
-.left-panel {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
-
-  & > * {
-    margin: 0 auto 15px;
-  }
-  .stored-piece {
-    width: 100px;
-    height: 100px;
-    display: block;
-    background: #aaa;
-    margin-top: 15px;
-  }
-
-  .score {
-    width: 80%;
-    height: 50px;
-  }
-  .rows-cleared {
-    width: 80%;
-    height: 50px;
-  }
-
-  .new-game {
-    background: orange;
-  }
-  .start {
-    background: green;
-  }
-}
-
-.central-panel {
-  height: 100%;
-  width: 100%;
-  position: relative;
   
-  .game-over {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 100%;
-    background: rgba(0, 0, 0, 0.5);
+  .left-panel {
+    width: calc(var(--block-width) * 3);
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    justify-content: flex-start;
     align-items: center;
 
-    color: white;
-    font-size: 3em;
-    font-weight: bolder;
+    & > * {
+      margin: 0 auto 15px;
+    }
+    .stored-piece {
+      width: 100px;
+      height: 100px;
+      display: block;
+      background: #aaa;
+      margin-top: 15px;
+    }
+
+    .level {
+      height: 50px;
+    }
+    .score {
+      height: 50px;
+    }
+    .rows-cleared {
+      height: 50px;
+    }
+
+    .new-game {
+      background: orange;
+    }
+    .start {
+      background: green;
+    }
   }
-}
 
-.right-panel {
-  width: 20%;
-  height: auto;
-}
+  .central-panel {
+    width: calc(var(--block-width) * 10);
+    height: calc(var(--block-width) * 20);
+    position: relative;
+    
+    .game-over {
+      position: relative;
+      top: 0;
+      left: 0;
+      transform: translateY(-100%);
 
-.button {
-  user-select: none;
-  cursor: pointer;
-  width: 80%;
-  margin: auto;
-  padding: 5px;
+      height: 100%;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
 
-  &:hover {
-    background: #eee;
+      color: white;
+      font-size: 3em;
+      font-weight: bolder;
+    }
   }
-  
+
+  .right-panel {
+    width: calc(var(--block-width) * 2);
+    height: auto;
+  }
+
+  .button {
+    user-select: none;
+    cursor: pointer;
+    width: 80%;
+    margin: auto;
+    padding: 5px;
+
+    &:hover {
+      background: #eee;
+    }
+    
+  }
+
 }

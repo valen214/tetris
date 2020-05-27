@@ -1,194 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Piece } from './Piece.service';
-
-export class Grid
-{
-  static EMPTY_COLOR = "#eee";
-  activePiece: Piece
+import { Grid } from './Grid';
+import { BehaviorSubject } from 'rxjs';
 
 
-  color = new Array(10).fill("").map(
-      () => new Array(20).fill("").map(() => Grid.EMPTY_COLOR));
-
-  getColorAt(col: number, row: number){
-    if(this.activePiece){
-      const p = this.activePiece;
-      let relativeX = col - p.x;
-      let relativeY = row - p.y;
-      let grid = p.grid[p.orientation];
-      if(0 <= relativeX && relativeX < grid.length &&
-          0 <= relativeY && relativeY < grid.length){
-        if(grid[relativeX][relativeY]){
-          return this.activePiece.color;
-        }
-      }
-    }
-    return this.color[col][row];
-  }
-
-  collide(
-      p: Piece,
-      orientation: null|0|1|2|3 = null,
-      x: number = p.x,
-      y: number = p.y){
-    if(orientation === null){
-      orientation = p.orientation;
-    }
-    let grid = p.grid[orientation];
-    let collide: boolean = false;
-    let oob = [ false, false, false, false ];
-    for(let i = 0; i < grid.length; ++i){
-      for(let j = 0; j < grid.length; ++j){
-        if(grid[i][j]){
-          let [a, b, c, d] = [
-            !(0 <= y + j),
-            !(y + j < 19),
-            !(0 <= x + i),
-            !(x + i < 10)
-          ];
-          oob[0] = oob[0] || a;
-          oob[1] = oob[1] || b;
-          oob[2] = oob[2] || c;
-          oob[3] = oob[3] || d;
-
-          if(!collide && !a && !b && !c && !d &&
-              this.color[x + i][y + j] !== Grid.EMPTY_COLOR){
-            collide = true;
-          }
-        }
-      }
-    }
-    return [collide, ...oob];
-  }
-
-  fallOneStep(): boolean {
-    if(!this.activePiece) return false;
-
-    const p = this.activePiece;
-
-    let [collide, ...oob] = this.collide(p, null, p.x, p.y + 1);
-    console.log(collide, ...oob, "y:", p.y);
-    if(collide || oob[1]){
-      return false;
-    }
-
-    p.y += 1;
-    return true;
-  }
-  drop(){
-    while(this.fallOneStep()){}
-  }
-  moveLeft(){
-    if(!this.activePiece) return false;
-
-    const p = this.activePiece;
-    let grid = p.grid[p.orientation];
-
-    let movable = true;
-    let [collide, ...oob] = this.collide(p, null, p.x - 1, p.y);
-    if(collide || oob[2]){
-      movable = false
-    } else{
-      p.x -= 1;
-    }
-
-    return movable;
-  }
-  moveRight(){
-    if(!this.activePiece) return false;
-
-    const p = this.activePiece;
-
-    let movable = true;
-    let [collide, ...oob] = this.collide(p, null, p.x + 1, p.y);
-
-    if(collide || oob[3]){
-      movable = false
-    } else{
-      p.x += 1;
-    }
-    return true;
-  }
-
-  rotate(clockwise = true){
-    if(!this.activePiece) return false;
-
-    const p = this.activePiece;
-    let candidates = p.rotate(clockwise);
-    let rotatable = false;
-    for(let i = 0; i < 5; ++i){
-      let c = candidates[i];
-      let collide_or_oob = this.collide(c);
-      if(!collide_or_oob.includes(true)){
-        rotatable = true;
-
-        Object.assign(p, c);
-        break;
-      }
-    }
-
-    return rotatable;
-  }
-
-  mergePiece(){
-    if(!this.activePiece){
-      throw new Error("trying to merge piece with no active piece");
-    }
-    
-    const p = this.activePiece;
-    let grid = p.grid[p.orientation];
-
-    
-    let [collide, ...oob] = this.collide(p, null, p.x, p.y);
-
-    if(collide){
-      throw new Error("piece merge with already occupied block");
-    }
-    if(oob.some(v => v)){
-      throw new Error("piece merge when oob");
-    }
-
-    for(let i = 0; i < grid.length; ++i){
-      for(let j = 0; j < grid.length; ++j){
-        if(grid[i][j]){
-          this.color[p.x + i][p.y + j] = p.color;
-        }
-      }
-    }
-
-    this.activePiece = null;
-  }
-  clearRow(...rows: number[]){
-    rows.sort();
-    for(let i = 0; i < rows.length; ++i){
-      for(let x = 0; x < this.color.length; ++x){
-        this.color[x][rows[i]] = Grid.EMPTY_COLOR;
-        for(let y = rows[i]; y >= 1; --y){
-          this.color[x][y] = this.color[x][y - 1];
-        }
-        this.color[x][0] = Grid.EMPTY_COLOR;
-      }
-    }
-  }
-  clearFullRows(): number[] {
-    let rows: number[] = [];
-    for(let y = 0; y < this.color[0].length; ++y){
-      let full = true;
-      for(let x = 0; x < this.color.length; ++x){
-        if(this.color[x][y] === Grid.EMPTY_COLOR){
-          full = false;
-          break;
-        }
-      }
-      if(full){
-        rows.push(y);
-      }
-    }
-    console.log("full rows:", rows);
-    this.clearRow(...rows);
-    return rows;
-  }
-}
 
 
 /**
@@ -215,6 +30,35 @@ enum LockDownType {
   CLASSIC
 }
 
+enum GoalSystemType {
+  FIXED_GOAL_SYSTEM,
+  VARIABLE_GOAL_SYSTEM,
+}
+
+export enum ScoreActionType {
+  NO_ACTION,
+  SINGLE,
+  DOUBLE,
+  TRIPLE,
+  TETRIS,
+  MINI_T_SPIN,
+  MINI_T_SPIN_SINGLE,
+  T_SPIN,
+  T_SPIN_SINGLE,
+  T_SPIN_DOUBLE,
+  T_SPIN_TRIPLE,
+  BACK_TO_BACK,
+  SOFT_DROP,
+  HARD_DROP,
+}
+export class ScoreActionEvent
+{
+  constructor(
+    public action: ScoreActionType,
+    public x?: number,
+    public y?: number,
+  ){}
+}
 
 @Injectable({
   providedIn: 'root'
@@ -223,6 +67,9 @@ export class GameService {
   static LOCK_DOWN_TIME = 500;
   static LOCK_DOWN_SETTING = LockDownType.EXTENDED_PLACEMENT
   static EXTENDED_PLACEMENT_MAX_ACTION_BEFORE_LOCK_DOWN = 15;
+
+
+  scoreActionEmitter: BehaviorSubject<ScoreActionEvent>;
 
   /**
 https://www.dropbox.com/s/g55gwls0h2muqzn/
@@ -241,6 +88,8 @@ dl=0&file_subpath=%2F2009+Tetris+Design+Guideline.pdf
   lastActionTimeStamp: number;
   dropTime: number = 200;
   harddropped: boolean;
+  level = 1;
+  goalSystem = GoalSystemType.VARIABLE_GOAL_SYSTEM;
 
 
   private _rowsCleared: number;
@@ -258,11 +107,18 @@ dl=0&file_subpath=%2F2009+Tetris+Design+Guideline.pdf
     this.currentPieceSwapped = false;
     this.piecesBag = [];
     this.queue = [];
-    this.dropTime = 200;
+    this.dropTime = 1000;
     this._rowsCleared = 0;
     this._score = 0;
     this.isGameOver = false;
     this.harddropped = false;
+    this.level = 1;
+    if(this.scoreActionEmitter){
+      this.scoreActionEmitter.unsubscribe();
+    }
+    this.scoreActionEmitter = new BehaviorSubject(
+        new ScoreActionEvent(ScoreActionType.NO_ACTION));
+    
   }
 
   getGrid(){
@@ -363,7 +219,6 @@ dl=0&file_subpath=%2F2009+Tetris+Design+Guideline.pdf
       while(grid === this.grid){
         if(this.harddropped){
           let [collide, ...oob] = this.grid.collide(p, null, p.x, p.y);
-          console.log(collide, ...oob);
           if(collide || oob[0]){
             this.gameOver();
             return;
@@ -426,10 +281,50 @@ dl=0&file_subpath=%2F2009+Tetris+Design+Guideline.pdf
         } while(!this.running);
       }
       if(grid !== this.grid) break;
+      console.log("last active piece:", p);
       let clearedRows = this.grid.clearFullRows();
       this._rowsCleared += clearedRows.length;
-      console.log("piece merged, grid:", this.grid,
-          ", cleared rows:", clearedRows);
+      
+      if(clearedRows.length){
+        switch(clearedRows.length){
+        case 1:
+          this.scoreActionEmitter.next(new ScoreActionEvent(
+            ScoreActionType.SINGLE, 10, clearedRows[0]
+          ));
+          this._score += 100 * this.level;
+          break;
+        case 2:
+          this.scoreActionEmitter.next(new ScoreActionEvent(
+            ScoreActionType.DOUBLE, 10, clearedRows[0]
+          ));
+          this._score += 300 * this.level;
+          break;
+        case 3:
+          this.scoreActionEmitter.next(new ScoreActionEvent(
+            ScoreActionType.TRIPLE, 10, clearedRows[0]
+          ));
+          this._score += 500 * this.level;
+          break;
+        case 4:
+          this.scoreActionEmitter.next(new ScoreActionEvent(
+            ScoreActionType.TETRIS, 10, clearedRows[0]
+          ));
+          this._score += 800 * this.level;
+          break;
+        default:
+        }
+
+        
+        if(this.goalSystem === GoalSystemType.VARIABLE_GOAL_SYSTEM){
+          let level = Math.ceil(0.1 *
+              (Math.sqrt(40 * (this._rowsCleared + 1) + 25) - 5));
+          if(level != this.level){
+            this.level = level;
+            this.dropTime = 1000 * Math.pow(0.8 -
+                ((level - 1) * 0.007), level - 1);
+          }
+        }
+      }
     }
   }
   gameOver(){

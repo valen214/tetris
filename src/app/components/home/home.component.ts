@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { StageComponent } from '../stage/stage.component';
-import { GameService } from 'src/app/services/game.service';
+import { GameService, ScoreActionEvent, ScoreActionType } from 'src/app/services/game.service';
 
 @Component({
   selector: 'app-home',
@@ -33,6 +33,10 @@ export class HomeComponent implements OnInit {
   newGame(){
     this._gameStage.newGame();
     this.newGameStarted = false;
+    this.game.scoreActionEmitter.subscribe((e: ScoreActionEvent) => {
+      if(e.action === ScoreActionType.NO_ACTION) return;
+      console.log(e.action, e.x, e.y);
+    });
   }
 
   startButtonClick(){

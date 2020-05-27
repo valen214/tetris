@@ -1,13 +1,15 @@
 
 .stage {
-  --grid-width: 30px;
-  --gridline-style: 3px solid rgba(0, 0, 0, 0.5);
+  --gridline-style: 3px solid rgba(0, 0, 0, 0.3);
 
-  width: calc(var(--grid-width) * 10);
-  height: calc(var(--grid-width) * 20 + 3px);
+  /*
+  var(--block-width) is defined in home.component.scss
+  */
+  width: calc(var(--block-width) * 10);
+  height: calc(var(--block-width) * 20 + 3px);
   overflow: hidden;
 
-  padding-top: 30px;
+  margin-top: 30px;
 
   .gridlines-container {
     display: flex;
@@ -21,12 +23,12 @@
     .column {
       background: #eee;
       border-right: var(--gridline-style);
-      width: var(--grid-width);
+      width: var(--block-width);
       height: 100%;
 
       .block {
         width: 100%;
-        height: var(--grid-width);
+        height: var(--block-width);
         border-bottom: var(--gridline-style);
       }
     }

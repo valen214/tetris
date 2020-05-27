@@ -10,7 +10,7 @@ import {
   ChangeDetectorRef,
 } from '@angular/core';
 import { Piece } from 'src/app/services/Piece.service';
-import { Grid } from 'src/app/services/game.service';
+import { Grid } from 'src/app/services/Grid';
 
 @Component({
   selector: 'piece',
@@ -49,8 +49,6 @@ export class PieceComponent implements OnInit {
     this.styleObject = {
       gridTemplateRows: this.gridTemplate,
       gridTemplateColumns: this.gridTemplate,
-      size: (typeof this.size === "string" ?
-          this.size : this.size && (this.size.toString() + "px")),
     }
 
     let grid = value.grid[value.orientation];

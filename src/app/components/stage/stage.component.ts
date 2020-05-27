@@ -1,6 +1,7 @@
 import { Component, OnInit, HostListener } from '@angular/core';
 import { Piece } from 'src/app/services/Piece.service';
-import { GameService, Grid } from 'src/app/services/game.service';
+import { GameService } from 'src/app/services/game.service';
+import { Grid } from 'src/app/services/Grid';
 
 
 @Component({
