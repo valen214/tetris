@@ -21,8 +21,8 @@
       margin: 0 auto 15px;
     }
     .stored-piece {
-      width: 100px;
-      height: 100px;
+      width: calc(var(--block-width) * 2.5);
+      height: calc(var(--block-width) * 2.5);
       display: block;
       background: #aaa;
       margin-top: 15px;
@@ -51,6 +51,38 @@
     height: calc(var(--block-width) * 20);
     position: relative;
     
+    .popup-message-container {
+      .popup-message {
+        --pos-x: 5;
+        --pos-y: 18;
+
+        font: 700 2em "Consolas";
+
+        position: absolute;
+        top: calc(var(--block-width) * var(--pos-y));
+        left: calc(var(--block-width) * var(--pos-x));
+        z-index: 1;
+        height: auto;
+        width: auto;
+        padding: 10px;
+
+        transform: translate(-50%, -50%);
+        opacity: 0;
+        transition: transform 1s, opacity 1s;
+
+        &.show {
+          display: block;
+          opacity: 1.0;
+          transform: translateX(-50%);
+          transition: none;
+        }
+
+        &.hide {
+          display: none;
+        }
+      }
+    }
+
     .game-over {
       position: relative;
       top: 0;

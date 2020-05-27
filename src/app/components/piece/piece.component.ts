@@ -55,7 +55,7 @@ export class PieceComponent implements OnInit {
     for(let i = 0; i < this.dimension; ++i){
       for(let j = 0; j < this.dimension; ++j){
         if(grid[i][j]){
-          this.background[i * 4 + j] = this.piece.color;
+          this.background[j * 4 + i] = this.piece.color;
         }
       }
     }

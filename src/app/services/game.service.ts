@@ -88,6 +88,7 @@ dl=0&file_subpath=%2F2009+Tetris+Design+Guideline.pdf
   lastActionTimeStamp: number;
   dropTime: number = 200;
   harddropped: boolean;
+  softdropping: boolean;
   level = 1;
   goalSystem = GoalSystemType.VARIABLE_GOAL_SYSTEM;
 
@@ -112,6 +113,7 @@ dl=0&file_subpath=%2F2009+Tetris+Design+Guideline.pdf
     this._score = 0;
     this.isGameOver = false;
     this.harddropped = false;
+    this.softdropping = false;
     this.level = 1;
     if(this.scoreActionEmitter){
       this.scoreActionEmitter.unsubscribe();
@@ -155,6 +157,7 @@ dl=0&file_subpath=%2F2009+Tetris+Design+Guideline.pdf
    * ACTIONS
    */
   moveLeft(){
+    if(!this.running) return;
     let success = this.grid.moveLeft();
     if(success){
       this.actionCount += 1;
@@ -162,24 +165,37 @@ dl=0&file_subpath=%2F2009+Tetris+Design+Guideline.pdf
     }
   }
   moveRight(){
+    if(!this.running) return;
     let success = this.grid.moveRight();
     if(success){
       this.actionCount += 1;
       this.lastActionTimeStamp = performance.now();
     }
   }
-  rotate(){
-    let success = this.grid.rotate();
+  rotate(clockwise = true){
+    if(!this.running) return;
+    let success = this.grid.rotate(clockwise);
     if(success){
       this.actionCount += 1;
       this.lastActionTimeStamp = performance.now();
     }
   }
+
+  startSoftDrop(){
+    if(!this.running) return;
+    this.softdropping = true;
+  }
+  stopSoftDrop(){
+    this.softdropping = false;
+  }
   drop(){
+    if(!this.running) return;
     this.grid.drop();
     this.harddropped = true;
   }
   store(){
+    if(!this.running) return;
+    if(!this.grid.activePiece) return;
     if(!this.currentPieceSwapped){
       let toBeStored = new (Object.getPrototypeOf(this.grid.activePiece).constructor)();
       if(this.stored){
@@ -224,6 +240,7 @@ dl=0&file_subpath=%2F2009+Tetris+Design+Guideline.pdf
             return;
           }
           this.harddropped = false;
+          this.softdropping = false;
           this.grid.mergePiece();
           break;
         }
@@ -238,7 +255,9 @@ dl=0&file_subpath=%2F2009+Tetris+Design+Guideline.pdf
 
         switch(GameService.LOCK_DOWN_SETTING){
         case LockDownType.EXTENDED_PLACEMENT:
-          if(performance.now() - lastDropTimestamp >= this.dropTime){
+          let droptime = this.softdropping ?
+              this.dropTime / 20 : this.dropTime;
+          if(performance.now() - lastDropTimestamp >= droptime){
             let dropped = this.grid.fallOneStep();
             if(dropped){
               lastDropTimestamp = performance.now();
@@ -262,6 +281,7 @@ dl=0&file_subpath=%2F2009+Tetris+Design+Guideline.pdf
               }
               if(collide || oob[1]){
                 this.grid.mergePiece();
+                this.softdropping = false;
                 merged = true;
               }
             }
