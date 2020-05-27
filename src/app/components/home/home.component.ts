@@ -1,6 +1,7 @@
-import { Component, OnInit, ViewChild, ElementRef, QueryList, ContentChildren, AfterContentInit, ViewChildren, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, QueryList, ContentChildren, AfterContentInit, ViewChildren, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { StageComponent } from '../stage/stage.component';
-import { GameService, ScoreActionEvent, ScoreActionType } from 'src/app/services/game.service';
+import { GameService } from 'src/app/services/game.service';
+import { ScoreActionEvent, ScoreActionType } from 'src/app/services/ScoreAction';
 
 @Component({
   selector: 'app-home',
@@ -21,7 +22,8 @@ export class HomeComponent implements AfterViewInit {
   newGameStarted = false;
 
   constructor(
-    public game: GameService
+    public game: GameService,
+    private changeDetector: ChangeDetectorRef,
   ){}
 
   ngOnInit(){
@@ -43,31 +45,36 @@ export class HomeComponent implements AfterViewInit {
   }
 
   lastUsedMessageIndex = 0;
+  messages: string[] = ["", "", "", "", ""]
   newAction(e: ScoreActionEvent){
 
     if(e.action === ScoreActionType.NO_ACTION) return;
-    console.log(e.action, e.x, e.y, this.popupMessageContainer);
-    let arr = this.popupMessageContainer.toArray();
-    let i = (this.lastUsedMessageIndex + 1) % arr.length;
-    let elem = arr[i].nativeElement;
+    const arr = this.popupMessageContainer.toArray();
+    const i = (++this.lastUsedMessageIndex) % arr.length;
+    const elem = arr[i].nativeElement;
 
-    elem.style["--pos-x"] = e.x;
-    elem.style["--pos-y"] = e.y;
-    elem.innerText = ScoreActionType[e.action];
+    elem.style.setProperty("--pos-x", e.x);
+    elem.style.setProperty("--pos-y", e.y);
+    this.messages[i] = ScoreActionType[e.action];
+    elem.innerText = this.messages[i];
 
     new Promise(res => {
       elem.classList.add("show", "hide");
-      setTimeout(res, 16);
+      /*
+      this would be executed before view update
+      */
+      setTimeout(res, 8);
     }).then(() => new Promise(res => {
       elem.classList.remove("hide");
-      setTimeout(res, 100);
+      setTimeout(res, 250);
     })).then(() => {
       elem.classList.remove("show");
     })
   }
 
   tryAction(){
-    this.newAction(new ScoreActionEvent(ScoreActionType.SOFT_DROP));
+    this.newAction(new ScoreActionEvent(ScoreActionType.SOFT_DROP, 5, 10));
+    this.newAction(new ScoreActionEvent(ScoreActionType.HARD_DROP, 5, 18));
   }
 
   startButtonClick(){

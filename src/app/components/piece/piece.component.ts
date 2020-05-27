@@ -3,11 +3,6 @@ import {
   OnInit,
   Input,
   ViewEncapsulation,
-  ViewChild,
-  ElementRef,
-  OnChanges,
-  SimpleChanges,
-  ChangeDetectorRef,
 } from '@angular/core';
 import { Piece } from 'src/app/services/Piece.service';
 import { Grid } from 'src/app/services/Grid';

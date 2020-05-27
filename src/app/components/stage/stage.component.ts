@@ -31,8 +31,6 @@ export class StageComponent implements OnInit {
   @HostListener("document:keydown", ["$event"])
   @HostListener("document:keyup", ["$event"])
   onKeyEvent(e: KeyboardEvent){
-
-    console.log(e);
     let k = e.key;
     if(k.length === 1){
       k = k.toLowerCase();
@@ -109,6 +107,7 @@ export class StageComponent implements OnInit {
       }
       break;
     default:
+      console.log("unknown key: e:", e);
     }
   }
 

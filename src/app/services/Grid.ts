@@ -1,4 +1,5 @@
 import { Piece } from './Piece.service';
+import { ScoreActionType } from './ScoreAction';
 
 export class Grid
 {
@@ -90,8 +91,12 @@ export class Grid
     p.y += 1;
     return true;
   }
-  drop(){
-    while(this.fallOneStep()){}
+  drop(): number{
+    let i = 0;
+    while(this.fallOneStep()){
+      ++i;
+    }
+    return i;
   }
   moveLeft(){
     if(!this.activePiece) return false;
@@ -125,18 +130,61 @@ export class Grid
     return true;
   }
 
-  rotate(clockwise = true){
-    if(!this.activePiece) return false;
+  performTSpinCheck(
+      p: InstanceType<typeof Piece.T>,
+      referencePoint: number,
+  ): ScoreActionType {
+    let action = null;
+
+    let corners = [
+      p.x < 0 || this.color[p.x][p.y] !== Grid.EMPTY_COLOR,
+      p.x+2 > 10 || this.color[p.x+2][p.y] !== Grid.EMPTY_COLOR,
+      p.x+2 > 10 || p.y+2 > 20 || this.color[p.x+2][p.y+2] !== Grid.EMPTY_COLOR,
+      p.y+2 > 20 || this.color[p.x][p.y+2] !== Grid.EMPTY_COLOR,
+    ];
+    let ori = p.orientation;
+    
+    if(referencePoint === 4){
+      action = ScoreActionType.T_SPIN;
+    } else if(corners[(0 + ori) % 4] && corners[(1 + ori) % 4]){
+      if(corners[(2 + ori) % 4] || corners[(3 + ori) % 3]){
+        
+        if(( ori == 0 && ( p.y+2 > 20 ||
+              this.color[p.x+1][p.y+2] !== Grid.EMPTY_COLOR )) ||
+           ( ori == 1 && ( p.x < 0 ||
+              this.color[p.x][p.y+1] !== Grid.EMPTY_COLOR )) ||
+           ( ori == 2 && (
+              this.color[p.x+1][p.y] !== Grid.EMPTY_COLOR )) ||
+           ( ori == 3 && ( p.x+2 > 10 ||
+              this.color[p.x+2][p.y+1] !== Grid.EMPTY_COLOR
+           ))){
+          action = ScoreActionType.T_SPIN;
+        } else{
+          action = ScoreActionType.MINI_T_SPIN;
+        }
+
+      }
+    } else if(corners[(2 + ori) % 4] && corners[(3 + ori) % 4]){
+      if(corners[(0 + ori) % 4] || corners[(1 + ori) % 4]){
+        action = ScoreActionType.MINI_T_SPIN;
+      }
+    }
+
+    return action;
+  }
+  rotate(clockwise = true): ScoreActionType {
+    if(!this.activePiece) return null;
 
     const p = this.activePiece;
     let candidates = p.rotate(clockwise);
+    let action = null;
 
     let rotatable = false;
     for(let i = 0; i < 5; ++i){
       let c = candidates[i];
       let collide_or_oob = this.collide(c);
       collide_or_oob[1] = false; // don't check top edge
-      if(!collide_or_oob.includes(true)){
+      if(collide_or_oob.every(v => v === false)){
         rotatable = true;
 
         Object.assign(p, {
@@ -144,11 +192,14 @@ export class Grid
           y: c.y,
           orientation: c.orientation,
         });
+        if(p instanceof Piece.T){
+          action = this.performTSpinCheck(p, i);
+        }
         break;
       }
     }
 
-    return rotatable;
+    return action;
   }
 
   mergePiece(){
@@ -205,7 +256,6 @@ export class Grid
         rows.push(y);
       }
     }
-    console.log("full rows:", rows);
     this.clearRow(...rows);
     return rows;
   }

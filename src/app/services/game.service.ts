@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Piece } from './Piece.service';
 import { Grid } from './Grid';
 import { BehaviorSubject } from 'rxjs';
+import { ScoreActionEvent, ScoreActionType } from './ScoreAction';
 
 
 
@@ -35,31 +36,6 @@ enum GoalSystemType {
   VARIABLE_GOAL_SYSTEM,
 }
 
-export enum ScoreActionType {
-  NO_ACTION,
-  SINGLE,
-  DOUBLE,
-  TRIPLE,
-  TETRIS,
-  MINI_T_SPIN,
-  MINI_T_SPIN_SINGLE,
-  T_SPIN,
-  T_SPIN_SINGLE,
-  T_SPIN_DOUBLE,
-  T_SPIN_TRIPLE,
-  BACK_TO_BACK,
-  SOFT_DROP,
-  HARD_DROP,
-}
-export class ScoreActionEvent
-{
-  constructor(
-    public action: ScoreActionType,
-    public x?: number,
-    public y?: number,
-  ){}
-}
-
 @Injectable({
   providedIn: 'root'
 })
@@ -91,6 +67,8 @@ dl=0&file_subpath=%2F2009+Tetris+Design+Guideline.pdf
   softdropping: boolean;
   level = 1;
   goalSystem = GoalSystemType.VARIABLE_GOAL_SYSTEM;
+  candidateTSpin: ScoreActionType
+  clearedOnLastMerge: boolean;
 
 
   private _rowsCleared: number;
@@ -120,7 +98,9 @@ dl=0&file_subpath=%2F2009+Tetris+Design+Guideline.pdf
     }
     this.scoreActionEmitter = new BehaviorSubject(
         new ScoreActionEvent(ScoreActionType.NO_ACTION));
-    
+    this.candidateTSpin = null;
+    this.clearedOnLastMerge = false;
+    this.lastActionTimeStamp = performance.now();
   }
 
   getGrid(){
@@ -149,6 +129,9 @@ dl=0&file_subpath=%2F2009+Tetris+Design+Guideline.pdf
   }
   private movePieceFromQueueToStage(){
     this.currentPieceSwapped = false;
+    this.harddropped = false;
+    this.softdropping = false;
+    this.candidateTSpin = null;
     this.timestampSincePieceFallOneStep = performance.now();
     this.grid.activePiece = this.queue.shift();
   }
@@ -174,10 +157,18 @@ dl=0&file_subpath=%2F2009+Tetris+Design+Guideline.pdf
   }
   rotate(clockwise = true){
     if(!this.running) return;
-    let success = this.grid.rotate(clockwise);
-    if(success){
+    let score_event = this.grid.rotate(clockwise);
+    if(score_event){
       this.actionCount += 1;
       this.lastActionTimeStamp = performance.now();
+
+      if(score_event === ScoreActionType.T_SPIN){
+        this.candidateTSpin = ScoreActionType.T_SPIN
+      } else if(score_event === ScoreActionType.MINI_T_SPIN &&
+        this.candidateTSpin !== ScoreActionType.T_SPIN
+      ){
+        this.candidateTSpin = ScoreActionType.MINI_T_SPIN;
+      }
     }
   }
 
@@ -190,7 +181,6 @@ dl=0&file_subpath=%2F2009+Tetris+Design+Guideline.pdf
   }
   drop(){
     if(!this.running) return;
-    this.grid.drop();
     this.harddropped = true;
   }
   store(){
@@ -214,16 +204,23 @@ dl=0&file_subpath=%2F2009+Tetris+Design+Guideline.pdf
   continue(){
     this.running = true;
   }
+
+  emit(e: ScoreActionType, x: number = 5, y: number = 18){
+    this.scoreActionEmitter.next(new ScoreActionEvent( e, x, y ));
+  }
+
   async start(){
     this.running = true;
     [0, 1, 2, 3, 4, 5].forEach(() => this.addPieceToQueue());
 
     const grid = this.grid;
 
+
+
     /*
     main game loop
     */
-    while(this.running && grid === this.grid){
+    while(!this.isGameOver && grid === this.grid){
       this.movePieceFromQueueToStage();
       if(grid !== this.grid) break;
       this.addPieceToQueue();
@@ -232,21 +229,28 @@ dl=0&file_subpath=%2F2009+Tetris+Design+Guideline.pdf
       let lastDropTimestamp = performance.now();
       let p = this.grid.activePiece;
       let lowest_reached_row = p.y;
+
+      // piece drop state
       while(grid === this.grid){
         if(this.harddropped){
+          let lines = this.grid.drop();
           let [collide, ...oob] = this.grid.collide(p, null, p.x, p.y);
+          
+
           if(collide || oob[0]){
             this.gameOver();
             return;
           }
-          this.harddropped = false;
-          this.softdropping = false;
+          this.emit(ScoreActionType.HARD_DROP);
+          this._score += lines * 2;
           this.grid.mergePiece();
+          this.harddropped = false;
           break;
         }
 
         let merged = false;
         if(p !== this.grid.activePiece){
+          throw new Error("active piece changed duration old piece dropping");
           p = this.grid.activePiece;
           lastDropTimestamp = performance.now();
           lowest_reached_row = p.y;
@@ -261,7 +265,10 @@ dl=0&file_subpath=%2F2009+Tetris+Design+Guideline.pdf
             let dropped = this.grid.fallOneStep();
             if(dropped){
               lastDropTimestamp = performance.now();
+              // this.emit(ScoreActionType.SOFT_DROP);
+              this._score += 1;
             }
+
             if(p.y > lowest_reached_row){
               this.actionCount = 0;
               lowest_reached_row = p.y;
@@ -281,7 +288,6 @@ dl=0&file_subpath=%2F2009+Tetris+Design+Guideline.pdf
               }
               if(collide || oob[1]){
                 this.grid.mergePiece();
-                this.softdropping = false;
                 merged = true;
               }
             }
@@ -297,44 +303,74 @@ dl=0&file_subpath=%2F2009+Tetris+Design+Guideline.pdf
           break;
         }
         do{
-          await new Promise(res => setTimeout(res, 16));
-        } while(!this.running);
+          await new Promise(res => setTimeout(res, 8));
+          if(grid !== this.grid) break;
+        } while(!this.running && !this.isGameOver);
       }
+      
       if(grid !== this.grid) break;
-      console.log("last active piece:", p);
+      // post merge
       let clearedRows = this.grid.clearFullRows();
       this._rowsCleared += clearedRows.length;
       
-      if(clearedRows.length){
-        switch(clearedRows.length){
-        case 1:
-          this.scoreActionEmitter.next(new ScoreActionEvent(
-            ScoreActionType.SINGLE, 10, clearedRows[0]
-          ));
-          this._score += 100 * this.level;
-          break;
-        case 2:
-          this.scoreActionEmitter.next(new ScoreActionEvent(
-            ScoreActionType.DOUBLE, 10, clearedRows[0]
-          ));
-          this._score += 300 * this.level;
-          break;
-        case 3:
-          this.scoreActionEmitter.next(new ScoreActionEvent(
-            ScoreActionType.TRIPLE, 10, clearedRows[0]
-          ));
-          this._score += 500 * this.level;
-          break;
-        case 4:
-          this.scoreActionEmitter.next(new ScoreActionEvent(
-            ScoreActionType.TETRIS, 10, clearedRows[0]
-          ));
-          this._score += 800 * this.level;
-          break;
-        default:
+      let event = null;
+      let score = 0;
+      switch(clearedRows.length){
+      case 0:
+        if(this.candidateTSpin === ScoreActionType.T_SPIN){
+          score = 400 * this.level;
+          this.emit(ScoreActionType.T_SPIN_SINGLE, p.x, p.y);
+        } else if(this.candidateTSpin === ScoreActionType.MINI_T_SPIN){
+          score = 100 * this.level;
+          this.emit(ScoreActionType.MINI_T_SPIN_SINGLE, p.x, p.y);
         }
+        break;
+      case 1:
+        if(this.candidateTSpin === ScoreActionType.T_SPIN){
+          event = ScoreActionType.T_SPIN_SINGLE;
+          score = 800 * this.level;
+        } else if(this.candidateTSpin === ScoreActionType.MINI_T_SPIN){
+          event = ScoreActionType.MINI_T_SPIN_SINGLE;
+          score = 200 * this.level;
+        } else{
+          event = ScoreActionType.SINGLE;
+          score = 100 * this.level;
+        }
+        this.emit(event, p.x, p.y);
+        break;
+      case 2:
+        if(this.candidateTSpin === ScoreActionType.T_SPIN){
+          event = ScoreActionType.T_SPIN_DOUBLE;
+          score = 1200 * this.level;
+        } else if(this.candidateTSpin === ScoreActionType.MINI_T_SPIN){
+          console.error("FATAL: mini T spin is impossible to have double clear")
+        } else{
+          event = ScoreActionType.DOUBLE;
+          score = 300 * this.level;
+        }
+        this.emit(event, 5, clearedRows[0]);
+        break;
+      case 3:
+        if(this.candidateTSpin === ScoreActionType.T_SPIN){
+          event = ScoreActionType.T_SPIN_TRIPLE;
+          score = 1600 * this.level;
+        } else if(this.candidateTSpin === ScoreActionType.MINI_T_SPIN){
+          console.error("FATAL: mini T spin is impossible to have triple clear")
+        } else{
+          event = ScoreActionType.TRIPLE;
+          score = 500 * this.level;
+        }
+        this.emit(event, 5, clearedRows[0]);
+        break;
+      case 4:
+        this.emit(ScoreActionType.TETRIS, 5, clearedRows[0]);
+        score = 800 * this.level;
+        break;
+      default:
+      }
 
         
+      if(clearedRows.length){
         if(this.goalSystem === GoalSystemType.VARIABLE_GOAL_SYSTEM){
           let level = Math.ceil(0.1 *
               (Math.sqrt(40 * (this._rowsCleared + 1) + 25) - 5));
@@ -344,11 +380,23 @@ dl=0&file_subpath=%2F2009+Tetris+Design+Guideline.pdf
                 ((level - 1) * 0.007), level - 1);
           }
         }
+        if(this.clearedOnLastMerge){
+          score *= 1.5;
+          this.emit(ScoreActionType.BACK_TO_BACK, 5, clearedRows[0]);
+        }
+        this.clearedOnLastMerge = true;
+      } else{
+        this.clearedOnLastMerge = false;
       }
+
+      this._score += score;
     }
+    
+    this.gameOver();
   }
   gameOver(){
     this.running = false;
     this.isGameOver = true;
+    console.log("game over");
   }
 }

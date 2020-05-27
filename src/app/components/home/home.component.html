@@ -28,10 +28,12 @@
   <div class="central-panel">
     <ng-container *ngIf="!game.isGameOver">
       <div class="popup-message-container">
-        <div #popupMessageContainer *ngFor="let i of [0, 1, 2, 3, 4]"
-            class="popup-message">
-          {{ i }}
-        </div>
+        <ng-container *ngFor="let i of [0, 1, 2, 3, 4]">
+          <div #popupMessageContainer
+              class="popup-message">
+            {{ this.messages[i] }}{{ i }}
+          </div>
+        </ng-container>
       </div>
     </ng-container>
     <app-stage #gameStage></app-stage>
