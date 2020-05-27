@@ -4,32 +4,79 @@
   flex-direction: row;
   height: 100%;
   width: 100%;
+  overflow: hidden;
+}
+
+.left-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+
+  & > * {
+    margin: 0 auto 15px;
+  }
+  .stored-piece {
+    width: 100px;
+    height: 100px;
+    display: block;
+    background: #aaa;
+    margin-top: 15px;
+  }
+
+  .score {
+    width: 80%;
+    height: 50px;
+  }
+  .rows-cleared {
+    width: 80%;
+    height: 50px;
+  }
+
+  .new-game {
+    background: orange;
+  }
+  .start {
+    background: green;
+  }
+}
+
+.central-panel {
+  height: 100%;
+  width: 100%;
+  position: relative;
+  
+  .game-over {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    color: white;
+    font-size: 3em;
+    font-weight: bolder;
+  }
+}
+
+.right-panel {
+  width: 20%;
+  height: auto;
 }
 
 .button {
   user-select: none;
   cursor: pointer;
+  width: 80%;
+  margin: auto;
+  padding: 5px;
 
   &:hover {
     background: #eee;
   }
   
-  width: 80%;
-  margin: auto;
-  padding: 5px;
-
-  &.new-game {
-    margin-bottom: 15px;
-  }
-
-  &.start {
-    background: green;
-  }
-}
-
-.stored-piece {
-  width: 100px;
-  height: 100px;
-  display: block;
-  background: #aaa;
 }

@@ -5,6 +5,13 @@
       [size]="'30px'"
       [piece]="game.stored"
       class="stored-piece"></piece>
+
+    <div class="score">
+      score: {{ game.score }}
+    </div>
+    <div class="rows-cleared">
+      rows cleared: {{ game.rowsCleared }}
+    </div>
     <div
         class="button new-game"
         (click)="newGame()">
@@ -15,8 +22,11 @@
       {{ !newGameStarted ? "Start" : game.running ? "Pause" : "Continue" }}
     </div>
   </div>
-  <div class="center-panel">
+  <div class="central-panel">
     <app-stage #gameStage></app-stage>
+    <div *ngIf="game.isGameOver" class="game-over">
+      Game Over!
+    </div>
   </div>
   <div class="right-panel">
     <app-queue></app-queue>

@@ -242,6 +242,13 @@ dl=0&file_subpath=%2F2009+Tetris+Design+Guideline.pdf
   dropTime: number = 200;
   harddropped: boolean;
 
+
+  private _rowsCleared: number;
+  get rowsCleared(){ return this._rowsCleared }
+  private _score: number;
+  get score(){ return this._score }
+  isGameOver: boolean;
+
   constructor(){ }
 
   newGame(){
@@ -251,6 +258,11 @@ dl=0&file_subpath=%2F2009+Tetris+Design+Guideline.pdf
     this.currentPieceSwapped = false;
     this.piecesBag = [];
     this.queue = [];
+    this.dropTime = 200;
+    this._rowsCleared = 0;
+    this._score = 0;
+    this.isGameOver = false;
+    this.harddropped = false;
   }
 
   getGrid(){
@@ -350,6 +362,12 @@ dl=0&file_subpath=%2F2009+Tetris+Design+Guideline.pdf
       let lowest_reached_row = p.y;
       while(grid === this.grid){
         if(this.harddropped){
+          let [collide, ...oob] = this.grid.collide(p, null, p.x, p.y);
+          console.log(collide, ...oob);
+          if(collide || oob[0]){
+            this.gameOver();
+            return;
+          }
           this.harddropped = false;
           this.grid.mergePiece();
           break;
@@ -377,7 +395,16 @@ dl=0&file_subpath=%2F2009+Tetris+Design+Guideline.pdf
               || ((
                 performance.now() - this.lastActionTimeStamp
               ) >= GameService.LOCK_DOWN_TIME )){
-              let [collide, ...oob] = this.grid.collide(p, null, p.x, p.y + 1);
+              let [collide, ...oob] = this.grid.collide(p, null, p.x, p.y);
+              if(collide){
+                this.gameOver();
+                return;
+              }
+              [collide, ...oob] = this.grid.collide(p, null, p.x, p.y + 1);
+              if(oob[0]){
+                this.gameOver();
+                return;
+              }
               if(collide || oob[1]){
                 this.grid.mergePiece();
                 merged = true;
@@ -400,7 +427,13 @@ dl=0&file_subpath=%2F2009+Tetris+Design+Guideline.pdf
       }
       if(grid !== this.grid) break;
       let clearedRows = this.grid.clearFullRows();
-      console.log("piece merged, grid:", this.grid, ", cleared rows:", clearedRows);
+      this._rowsCleared += clearedRows.length;
+      console.log("piece merged, grid:", this.grid,
+          ", cleared rows:", clearedRows);
     }
+  }
+  gameOver(){
+    this.running = false;
+    this.isGameOver = true;
   }
 }
