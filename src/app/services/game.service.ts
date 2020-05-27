@@ -277,15 +277,11 @@ dl=0&file_subpath=%2F2009+Tetris+Design+Guideline.pdf
                 performance.now() - this.lastActionTimeStamp
               ) >= GameService.LOCK_DOWN_TIME )){
               let [collide, ...oob] = this.grid.collide(p, null, p.x, p.y);
-              if(collide){
+              if(collide || oob[0]){
                 this.gameOver();
                 return;
               }
               [collide, ...oob] = this.grid.collide(p, null, p.x, p.y + 1);
-              if(oob[0]){
-                this.gameOver();
-                return;
-              }
               if(collide || oob[1]){
                 this.grid.mergePiece();
                 merged = true;
