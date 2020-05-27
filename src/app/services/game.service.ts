@@ -250,11 +250,11 @@ dl=0&file_subpath=%2F2009+Tetris+Design+Guideline.pdf
 
         let merged = false;
         if(p !== this.grid.activePiece){
-          throw new Error("active piece changed duration old piece dropping");
           p = this.grid.activePiece;
           lastDropTimestamp = performance.now();
           lowest_reached_row = p.y;
           this.actionCount = 0;
+          this.softdropping = false;
         }
 
         switch(GameService.LOCK_DOWN_SETTING){
