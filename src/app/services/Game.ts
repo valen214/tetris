@@ -305,21 +305,12 @@ export class Game {
     await new Promise(res => setTimeout(res, 8));
     return "beginFallingPhase";
   }
-  beginPatternPhase(){
+  performTSpinCheck(){
     const stage = this.gameData.stage;
     const p = stage.activePiece;
-    let [collide, ...oob] = stage.collide(p);
-    /*
-    still game over even if line clear above skyline
-    because for now Grid cannot handle oob merge
-    */
-    if(collide || oob[0]){
-      this.gameData.isGameOver = true;
-      return;
-    }
-
     let t_spin = false;
     let t_spin_mini = false;
+
     if(this.control.t_spin &&
         this.control.last_action_rotate){
       t_spin = true;
@@ -377,6 +368,23 @@ export class Game {
         }
       }
     }
+
+    return [t_spin, t_spin_mini];
+  }
+  beginPatternPhase(){
+    const stage = this.gameData.stage;
+    const p = stage.activePiece;
+    let [collide, ...oob] = stage.collide(p);
+    /*
+    still game over even if line clear above skyline
+    because for now Grid cannot handle oob merge
+    */
+    if(collide || oob[0]){
+      this.gameData.isGameOver = true;
+      return;
+    }
+
+    let [t_spin, t_spin_mini] = this.performTSpinCheck();
 
     stage.mergePiece();
 

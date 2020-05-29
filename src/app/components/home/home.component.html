@@ -30,6 +30,11 @@
           "Continue"
       }}
     </div>
+    <div
+        class="button error-report"
+        (click)="copyErrorReport()">
+      dump memory to clipboard
+    </div>
   </div>
   <div class="central-panel">
     <ng-container *ngIf="!game.gameData.isGameOver">

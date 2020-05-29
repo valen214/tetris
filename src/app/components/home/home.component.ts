@@ -3,6 +3,7 @@ import { StageComponent } from '../stage/stage.component';
 import { GameService } from 'src/app/services/game.service';
 import { ScoreActionEvent, ScoreActionType } from 'src/app/services/ScoreAction';
 import { Game } from 'src/app/services/Game';
+import { Grid } from 'src/app/services/Grid';
 
 @Component({
   selector: 'app-home',
@@ -91,5 +92,50 @@ export class HomeComponent implements AfterViewInit {
     } else{
       this.game.control.pause()
     }
+  }
+
+  copyErrorReport(){
+    let i = document.createElement("input");
+    let first_color: string;
+    i.value = JSON.stringify(this.game, (k, v) => {
+      switch(k){
+      case "scoreActionEmitter":
+      case "grid":
+        return undefined;
+      case "color":
+        if(v.map){
+          v = v.map(arr => arr.map((c) => {
+            switch(c){
+            case Grid.EMPTY_COLOR: return "_";
+            case "#87CEEB": return "I";
+            case "#0341AE": return "J";
+            case "#FF971C": return "L";
+            case "#FFD500": return "O";
+            case "#72CB3B": return "S";
+            case "#FF97FF": return "T";
+            case "#FF3213": return "Z";
+            }
+            return c;
+          }).join("")).join("\n");
+          if(first_color){
+            if(first_color === v){
+              return "<same as the other>";
+            } else{
+              return v;
+            }
+          } else{
+            first_color = v;
+            return v;
+          }
+        }
+        break;
+      }
+      return v;
+    });
+    document.body.appendChild(i);
+    i.focus();
+    i.select();
+    document.execCommand("copy");
+    document.body.removeChild(i);
   }
 }
