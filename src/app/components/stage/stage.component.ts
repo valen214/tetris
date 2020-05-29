@@ -2,6 +2,7 @@ import { Component, OnInit, HostListener } from '@angular/core';
 import { Piece } from 'src/app/services/Piece.service';
 import { GameService } from 'src/app/services/game.service';
 import { Grid } from 'src/app/services/Grid';
+import { Game } from 'src/app/services/Game';
 
 
 enum UserAction
@@ -46,7 +47,7 @@ export class StageComponent implements OnInit {
           action.splice(action.indexOf(UserAction.ROTATE), 1);
         }
       } else{
-        this.gameService.rotate();
+        this.game.control.rotate();
         action.push(UserAction.ROTATE);
       }
       break;
@@ -57,44 +58,44 @@ export class StageComponent implements OnInit {
           action.splice(action.indexOf(UserAction.ROTATE_COUNTER), 1);
         }
       } else{
-        this.gameService.rotate(false);
+        this.game.control.rotate(false);
         action.push(UserAction.ROTATE_COUNTER);
       }
       break;
     case "Escape":
     case "F1":
-      this.gameService.pause();
+      this.game.control.pause();
       break;
     case "d":
     case "ArrowRight":
       
       if(e.type === "keydown"){
-        this.gameService.moveRight();
+        this.game.control.shiftRight();
       }
       break;
     case "s":
     case "ArrowDown":
       if(action.includes(UserAction.SOFTDROP)){
         if(e.type === "keyup"){
-          this.gameService.stopSoftDrop();
+          this.game.control.stopSoftDrop();
           action.splice(action.indexOf(UserAction.SOFTDROP), 1);
         }
       } else{
-        this.gameService.startSoftDrop();
+        this.game.control.startSoftDrop();
         action.push(UserAction.SOFTDROP);
       }
       break;
     case "a":
     case "ArrowLeft":
       if(e.type === "keydown"){
-        this.gameService.moveLeft();
+        this.game.control.shiftLeft();
       }
       break;
     case "s":
       break;
     case "c":
     case "Shift":
-      this.gameService.store();
+      this.game.control.swap();
       break;
     case " ":
       if(action.includes(UserAction.HARDDROP)){
@@ -102,7 +103,7 @@ export class StageComponent implements OnInit {
           action.splice(action.indexOf(UserAction.HARDDROP), 1);
         }
       } else{
-        this.gameService.drop();
+        this.game.control.hardDrop();
         action.push(UserAction.HARDDROP);
       }
       break;
@@ -111,18 +112,16 @@ export class StageComponent implements OnInit {
     }
   }
 
-  grid: Grid;
+  get game(){
+    return this.gameService.game;
+  }
+  get grid(){
+    return this.game.gameData.stage;
+  }
 
   constructor(
     private gameService: GameService
-  ){
-  }
+  ){}
 
-  ngOnInit(): void {
-  }
-
-  newGame(){
-    this.gameService.newGame();
-    this.grid = this.gameService.getGrid();
-  }
+  ngOnInit(): void {}
 }

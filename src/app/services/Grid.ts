@@ -3,12 +3,21 @@ import { ScoreActionType } from './ScoreAction';
 
 export class Grid
 {
-  static EMPTY_COLOR = null;
+  static EMPTY_COLOR = "rgba(0, 0, 0, 0)";
   activePiece: Piece
 
 
   color = new Array(10).fill("").map(
       () => new Array(20).fill("").map(() => Grid.EMPTY_COLOR));
+
+  isOccupied(col: number, row: number): boolean | null {
+    if(0 <= col && col <= 9 &&
+        0 <= row && row <= 19){
+      let c = this.color[col][row];
+      return c !== Grid.EMPTY_COLOR;
+    }
+    return null;
+  }
 
   getColorAt(col: number, row: number){
     let out: string;
@@ -63,7 +72,7 @@ export class Grid
           oob[3] = oob[3] || d;
 
           if(!collide && !a && !b && !c && !d &&
-              this.color[x + i][y + j] !== Grid.EMPTY_COLOR){
+              this.isOccupied(x + i, y + j)){
             collide = true;
           }
         }
@@ -177,7 +186,6 @@ export class Grid
 
     const p = this.activePiece;
     let candidates = p.rotate(clockwise);
-    let action = null;
 
     let rotatable = false;
     for(let i = 0; i < 5; ++i){
@@ -192,14 +200,18 @@ export class Grid
           y: c.y,
           orientation: c.orientation,
         });
-        if(p instanceof Piece.T){
-          action = this.performTSpinCheck(p, i);
+        if(i === 4){
+          return ScoreActionType.T_SPIN;
         }
         break;
       }
     }
 
-    return action;
+    if(rotatable){
+      return ScoreActionType.NO_ACTION;
+    } else{
+      return null;
+    }
   }
 
   mergePiece(){
@@ -247,7 +259,7 @@ export class Grid
     for(let y = 0; y < this.color[0].length; ++y){
       let full = true;
       for(let x = 0; x < this.color.length; ++x){
-        if(this.color[x][y] === Grid.EMPTY_COLOR){
+        if(!this.isOccupied(x, y)){
           full = false;
           break;
         }

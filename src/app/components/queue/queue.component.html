@@ -1,5 +1,5 @@
 <div class="queue-container">
-  <div *ngFor="let p of game.queue"
+  <div *ngFor="let p of game.gameData.queuedTetrimino"
       class="piece-container">
     <piece class="piece" [piece]="p">
     </piece>

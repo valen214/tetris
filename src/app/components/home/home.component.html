@@ -3,17 +3,17 @@
 
     <piece
       [size]="'30px'"
-      [piece]="game.stored"
+      [piece]="game.gameData.heldTetrimino"
       class="stored-piece"></piece>
 
     <div class="level">
-      level: {{ game.level }}
+      level: {{ game.statistics.level }}
     </div>
     <div class="score">
-      score: {{ game.score }}
+      score: {{ game.statistics.score }}
     </div>
     <div class="rows-cleared">
-      rows cleared: {{ game.rowsCleared }}
+      rows cleared: {{ game.statistics.rewarded_lines_cleared }}
     </div>
     <div
         class="button new-game"
@@ -22,11 +22,17 @@
     </div>
     <div class="button start"
         (click)="startButtonClick()">
-      {{ !newGameStarted ? "Start" : game.running ? "Pause" : "Continue" }}
+      {{
+        !newGameStarted ?
+          "Start" :
+        game.control.paused ?
+          "Pause" :
+          "Continue"
+      }}
     </div>
   </div>
   <div class="central-panel">
-    <ng-container *ngIf="!game.isGameOver">
+    <ng-container *ngIf="!game.gameData.isGameOver">
       <div class="popup-message-container">
         <ng-container *ngFor="let i of [0, 1, 2, 3, 4]">
           <div #popupMessageContainer
@@ -37,7 +43,7 @@
       </div>
     </ng-container>
     <app-stage #gameStage></app-stage>
-    <div *ngIf="game.isGameOver" class="game-over">
+    <div *ngIf="game.gameData.isGameOver" class="game-over">
       Game Over!
     </div>
   </div>

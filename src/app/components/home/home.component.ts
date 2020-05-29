@@ -2,6 +2,7 @@ import { Component, OnInit, ViewChild, ElementRef, QueryList, ContentChildren, A
 import { StageComponent } from '../stage/stage.component';
 import { GameService } from 'src/app/services/game.service';
 import { ScoreActionEvent, ScoreActionType } from 'src/app/services/ScoreAction';
+import { Game } from 'src/app/services/Game';
 
 @Component({
   selector: 'app-home',
@@ -16,18 +17,22 @@ export class HomeComponent implements AfterViewInit {
     this._gameStage = stage;
   }
 
+  
   @ViewChildren("popupMessageContainer", { read: ElementRef })
   popupMessageContainer: QueryList<ElementRef>;
+  
 
+  get game(){
+    return this.gameService.game;
+  }
   newGameStarted = false;
 
   constructor(
-    public game: GameService,
+    public gameService: GameService,
     private changeDetector: ChangeDetectorRef,
   ){}
 
-  ngOnInit(){
-  }
+  ngOnInit(){}
 
   ngAfterViewInit(){
     setTimeout(() => {
@@ -38,10 +43,8 @@ export class HomeComponent implements AfterViewInit {
   }
 
   newGame(){
-    this._gameStage.newGame();
     this.newGameStarted = false;
-    this.game.scoreActionEmitter.subscribe(
-        this.newAction.bind(this));
+    this.gameService.newGame();
   }
 
   lastUsedMessageIndex = 0;
@@ -81,10 +84,12 @@ export class HomeComponent implements AfterViewInit {
     if(!this.newGameStarted){
       this.game.start();
       this.newGameStarted = true;
-    } else if(this.game.running){
-      this.game.pause()
+      this.game.scoreActionEmitter.subscribe(
+          this.newAction.bind(this));
+    } else if(this.game.control.paused){
+      this.game.control.continue()
     } else{
-      this.game.continue()
+      this.game.control.pause()
     }
   }
 }

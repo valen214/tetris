@@ -8,8 +8,12 @@ import { GameService } from 'src/app/services/game.service';
 })
 export class QueueComponent implements OnInit {
 
+  get game(){
+    return this.gameService.game;
+  }
+
   constructor(
-    public game: GameService
+    public gameService: GameService,
   ){}
 
   ngOnInit() {
