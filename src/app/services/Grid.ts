@@ -256,9 +256,9 @@ export class Grid
   }
   clearFullRows(): number[] {
     let rows: number[] = [];
-    for(let y = 0; y < this.color[0].length; ++y){
+    for(let y = 0; y < 20; ++y){
       let full = true;
-      for(let x = 0; x < this.color.length; ++x){
+      for(let x = 0; x < 10; ++x){
         if(!this.isOccupied(x, y)){
           full = false;
           break;

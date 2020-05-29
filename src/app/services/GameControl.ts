@@ -3,13 +3,18 @@ import { ScoreActionType } from './ScoreAction';
 
 
 export class GameControl {
+    history: [];
+
     soft_drop: boolean;
     hard_drop: boolean;
+
+    shift_right: boolean
+    shift_left: boolean;
+    do_rotate: number;
+
     swapping: boolean;
     t_spin: boolean;
     last_action_rotate: boolean;
-    actionCount: number;
-    lastActionTime: number;
     paused: boolean;
   
     constructor(
@@ -24,51 +29,46 @@ export class GameControl {
       this.swapping = false;
       this.t_spin = false;
       this.last_action_rotate = false;
-      this.actionCount = 0;
-      this.lastActionTime = 0;
       this.paused = false;
     }
-    actionDone(){
-      this.actionCount += 1;
-      this.lastActionTime = performance.now();
-    }
     swap(){
+      if(this.paused) return;
       this.swapping = true;
       this.last_action_rotate = false;
     }
   
-    rotate(clockwise: boolean = true){
-      let e = this.stage.rotate(clockwise);
-      if(e === ScoreActionType.T_SPIN){
-        this.t_spin = true;
-      }
-      if(e !== null){
-        this.actionDone();
-      }
-      this.last_action_rotate = true;
+    rotateDown(clockwise: boolean = true){
+      if(this.paused) return;
+      this.do_rotate = clockwise ? 1 : 3
     }
-    shiftLeft(){
-      let success = this.stage.moveLeft();
-      if(success){
-        this.actionDone();
-      }
-      
-      this.last_action_rotate = false;
+    rotateUp(){
+      // ineffective
+      this.do_rotate = 0
     }
-    shiftRight(){
-      let success = this.stage.moveRight();
-      if(success){
-        this.actionDone();
-      }
-      this.last_action_rotate = false;
+    shiftLeftDown(){
+      if(this.paused) return;
+      this.shift_left = true;
+    }
+    shiftLeftUp(){
+      this.shift_left = false;
+    }
+    shiftRightDown(){
+      if(this.paused) return;
+      this.shift_right = true;
+    }
+    shiftRightUp(){
+      this.shift_right = false;
     }
     startSoftDrop(){
+      if(this.paused) return;
       this.soft_drop = true;
     }
     stopSoftDrop(){
+      if(this.paused) return;  
       this.soft_drop = false;
     }
     hardDrop(){
+      if(this.paused) return;
       this.hard_drop = true;
       this.last_action_rotate = false;
     }

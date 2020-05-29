@@ -30,6 +30,7 @@ export class StageComponent implements OnInit {
   currentAction: UserAction[] = [];
 
   @HostListener("document:keydown", ["$event"])
+  // @HostListener("document:keypress", ["$event"])
   @HostListener("document:keyup", ["$event"])
   onKeyEvent(e: KeyboardEvent){
     let k = e.key;
@@ -46,9 +47,10 @@ export class StageComponent implements OnInit {
         if(e.type === "keyup"){
           action.splice(action.indexOf(UserAction.ROTATE), 1);
         }
+        this.game.control.rotateUp();
       } else{
-        this.game.control.rotate();
         action.push(UserAction.ROTATE);
+        this.game.control.rotateDown();
       }
       break;
     case "Control":
@@ -57,8 +59,9 @@ export class StageComponent implements OnInit {
         if(e.type === "keyup"){
           action.splice(action.indexOf(UserAction.ROTATE_COUNTER), 1);
         }
+        this.game.control.rotateUp();
       } else{
-        this.game.control.rotate(false);
+        this.game.control.rotateDown(false);
         action.push(UserAction.ROTATE_COUNTER);
       }
       break;
@@ -68,9 +71,10 @@ export class StageComponent implements OnInit {
       break;
     case "d":
     case "ArrowRight":
-      
       if(e.type === "keydown"){
-        this.game.control.shiftRight();
+        this.game.control.shiftRightDown();
+      } else{
+        this.game.control.shiftRightUp();
       }
       break;
     case "s":
@@ -88,7 +92,9 @@ export class StageComponent implements OnInit {
     case "a":
     case "ArrowLeft":
       if(e.type === "keydown"){
-        this.game.control.shiftLeft();
+        this.game.control.shiftLeftDown();
+      } else{
+        this.game.control.shiftLeftUp();
       }
       break;
     case "s":

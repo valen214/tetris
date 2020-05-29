@@ -99,6 +99,11 @@ export class Game {
     lastFallTime: number;
     lastActionTime: number;
 
+    lastLeft: number;
+    lastRight: number;
+    repeatLeft: boolean;
+    repeatRight: boolean;
+
     isPaused: boolean;
     clearedOnLastPiece: boolean;
     dropTime: number;
@@ -108,6 +113,8 @@ export class Game {
       isPaused = false,
       clearedOnLastPiece = false,
       dropTime = this.config.base_drop_time,
+      repeatLeft = false,
+      repeatRight = false,
   ){
     if(!this.actionData){
       this.actionData = {};
@@ -122,7 +129,14 @@ export class Game {
       extendedPlacementActionCount: 0,
 
       lastFallTime: performance.now(),
-      lastActionTime: 0,
+      lastActionTime: performance.now(),
+
+      lastLeft: 0,
+      lastRight: 0,
+      repeatLeft: repeatLeft !== null ?
+          repeatLeft : this.actionData.repeatLeft,
+      repeatRight: repeatRight !== null ?
+          repeatRight : this.actionData.repeatRight,
     });
     if(currentPieceSwapped !== null){
       this.actionData.currentPieceSwapped = currentPieceSwapped;
@@ -176,6 +190,80 @@ export class Game {
         new ScoreActionEvent(ScoreActionType.NO_ACTION));
   }
 
+  handleInput(){
+    let success: boolean;
+    const stage = this.gameData.stage;
+    if((this.control.shift_left &&
+        this.control.shift_right) || (
+        !this.control.shift_left &&
+        !this.control.shift_right
+       )){
+
+      this.actionData.repeatRight = false;
+      this.actionData.repeatLeft = false;
+      this.actionData.lastLeft = 0;
+      this.actionData.lastRight = 0;
+
+    } else if(this.control.shift_left){
+      this.actionData.repeatRight = false;
+      this.actionData.lastRight = 0;
+
+      if(this.actionData.repeatLeft){
+        if(performance.now() - this.actionData.lastLeft > 100){
+          success = stage.moveLeft();
+        }
+      } else if(this.actionData.lastLeft){
+        if(performance.now() - this.actionData.lastLeft > 300){
+          this.actionData.repeatLeft = true;
+        }
+      } else{
+        success = stage.moveLeft();
+      }
+
+      if(success){
+        this.actionData.lastLeft = performance.now();
+      }
+      this.control.last_action_rotate = false;
+
+    } else if(this.control.shift_right){
+      this.actionData.repeatLeft = false;
+      this.actionData.lastLeft = 0;
+
+      if(this.actionData.repeatRight){
+        if(performance.now() - this.actionData.lastRight > 100){
+          success = stage.moveRight();
+        }
+      } else if(this.actionData.lastRight){
+        if(performance.now() - this.actionData.lastRight > 300){
+          this.actionData.repeatRight = true;
+        }
+      } else{
+        success = stage.moveRight();
+      }
+
+      if(success){
+        this.actionData.lastRight = performance.now();
+      }
+      this.control.last_action_rotate = false;
+    }
+    if(success){
+      this.actionData.extendedPlacementActionCount += 1;
+      this.actionData.lastActionTime = performance.now();
+    }
+
+    if(this.control.do_rotate){
+      let e = stage.rotate(this.control.do_rotate === 1);
+      if(e === ScoreActionType.T_SPIN){
+        this.actionData.currentPieceTSpin = true;
+      }
+      if(e !== null){
+        this.actionData.extendedPlacementActionCount += 1;
+        this.actionData.lastActionTime = performance.now();
+      }
+      this.control.last_action_rotate = true;
+      this.control.do_rotate = 0;
+    }
+  }
   async handlePause(){
     while(this.control.paused){
       await new Promise(res => setTimeout(res, 16));
@@ -183,7 +271,7 @@ export class Game {
   }
 
   async beginGenerationPhase(){
-    this.initActionData(null, null, null, null);
+    this.initActionData(null, null, null, null, null, null);
     this.control.init(null, null);
 
     let bag = this.gameData.tetriminoBag;
@@ -228,7 +316,7 @@ export class Game {
         return true;
       }
 
-      this.initActionData(null, null, null, null);
+      this.initActionData(null, null, null, null, null, null);
       this.control.init(null, null);
       this.gameData.stage.activePiece =
           this.gameData.heldTetrimino;
@@ -238,6 +326,7 @@ export class Game {
   }
   async beginFallingPhase(){
     await this.handlePause();
+    this.handleInput();
     let swapped = this.handleSwap();
     if(swapped){
       return "beginGenerationPhase";
@@ -246,6 +335,7 @@ export class Game {
     const stage = this.gameData.stage;
 
     if(this.control.hard_drop){
+      this.control.hard_drop = false;
       let lines = stage.drop();
       this.actionData.currentPieceHarddrop = lines;
       return "beginPatternPhase";
@@ -311,7 +401,7 @@ export class Game {
     let t_spin = false;
     let t_spin_mini = false;
 
-    if(this.control.t_spin &&
+    if(this.actionData.currentPieceTSpin &&
         this.control.last_action_rotate){
       t_spin = true;
     } else if(p instanceof Piece.T &&

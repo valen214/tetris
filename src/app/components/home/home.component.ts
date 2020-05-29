@@ -4,6 +4,7 @@ import { GameService } from 'src/app/services/game.service';
 import { ScoreActionEvent, ScoreActionType } from 'src/app/services/ScoreAction';
 import { Game } from 'src/app/services/Game';
 import { Grid } from 'src/app/services/Grid';
+import { Piece } from 'src/app/services/Piece.service';
 
 @Component({
   selector: 'app-home',
@@ -95,16 +96,29 @@ export class HomeComponent implements AfterViewInit {
   }
 
   copyErrorReport(){
+    /*
+console.log(new Array(20).fill("").map((_, i) => {
+  return new Array(10).fill("").map((_, j) => a[j][i]).join("")
+}).join("\n"))
+     */
     let i = document.createElement("input");
-    let first_color: string;
+    let first_stage: string;
     i.value = JSON.stringify(this.game, (k, v) => {
       switch(k){
       case "scoreActionEmitter":
       case "grid":
         return undefined;
+      case "stage":
+        if(first_stage){
+          if(first_stage === v){
+            return "<same as the other>";
+          }
+        } else{
+          return v;
+        }
       case "color":
         if(v.map){
-          v = v.map(arr => arr.map((c) => {
+          v = v.map((arr: string[]) => arr.map((c) => {
             switch(c){
             case Grid.EMPTY_COLOR: return "_";
             case "#87CEEB": return "I";
@@ -117,18 +131,21 @@ export class HomeComponent implements AfterViewInit {
             }
             return c;
           }).join("")).join("\n");
-          if(first_color){
-            if(first_color === v){
-              return "<same as the other>";
-            } else{
-              return v;
-            }
-          } else{
-            first_color = v;
-            return v;
-          }
+          return v;
         }
         break;
+      }
+      if(v instanceof Piece){
+        let coord = `x:${v.x} y:${v.y}`
+        switch(v.color){
+          case "#87CEEB": return "<class Piece.I>" + coord;
+          case "#0341AE": return "<class Piece.J>" + coord;
+          case "#FF971C": return "<class Piece.L>" + coord;
+          case "#FFD500": return "<class Piece.O>" + coord;
+          case "#72CB3B": return "<class Piece.S>" + coord;
+          case "#FF97FF": return "<class Piece.T>" + coord;
+          case "#FF3213": return "<class Piece.Z>" + coord;
+        }
       }
       return v;
     });
