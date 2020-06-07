@@ -14,7 +14,7 @@ export class Grid
     if(0 <= col && col <= 9 &&
         0 <= row && row <= 19){
       let c = this.color[col][row];
-      return c !== Grid.EMPTY_COLOR;
+      return c && c !== Grid.EMPTY_COLOR;
     }
     return null;
   }

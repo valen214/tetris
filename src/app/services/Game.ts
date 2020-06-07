@@ -480,6 +480,7 @@ export class Game {
 
     let event = ScoreActionType.NO_ACTION;
     let rows = stage.clearFullRows();
+    rows.splice(0, 0, ...stage.clearFullRows());
     let score = 0;
     switch(rows.length){
     case 0:
